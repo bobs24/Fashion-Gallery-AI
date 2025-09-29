@@ -4,6 +4,7 @@ services:
   backend:
     # Use the pre-built image from Docker Hub
     image: bobs24/fashion-gallery-backend:latest
+    platform: linux/arm64
     restart: always
     env_file:
       - ./backend/.env
@@ -14,6 +15,7 @@ services:
   frontend:
     # Use the pre-built image from Docker Hub
     image: bobs24/fashion-gallery-frontend:latest
+    platform: linux/arm64
     restart: always
     ports:
       # Map port 80 (HTTP) on the server to port 80 in the container

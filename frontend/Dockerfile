@@ -42,7 +42,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application using a lightweight web server
-FROM nginx:1.21-alpine
+FROM nginx:stable
 
 # This is the simplified part. We no longer need the ARG, ENV, or complex CMD.
 # We just copy the final nginx.conf file directly.
