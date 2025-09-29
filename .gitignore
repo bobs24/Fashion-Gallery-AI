@@ -1,0 +1,35 @@
+--- General ---
+Ignore environment files. These contain secrets and should never be committed.
+.env
+.env.*
+!/.env.example
+
+Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+--- Python / Backend ---
+Ignore Python cache files
+pycache/
+*.pyc
+
+Ignore Python virtual environments
+.venv/
+venv/
+env/
+
+--- Node.js / Frontend ---
+Ignore the massive node_modules folder
+frontend/node_modules/
+
+Ignore the build output directory
+frontend/dist/
+
+Ignore local Vite environment files
+frontend/.env.local
+frontend/.env.*.local
+
+Ignore logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

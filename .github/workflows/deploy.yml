@@ -1,0 +1,38 @@
+name: Deploy to Fly.io
+
+# This workflow runs automatically every time you push to the 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Fly.io CLI
+        uses: superfly/fly-pr-review-apps@v1
+        with:
+          fly_api_token: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy Backend Service
+        # This command runs from within the 'backend' directory
+        working-directory: ./backend
+        run: |
+          flyctl deploy --config fly.toml \
+            --build-secret GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
+            --build-secret METABASE_URL="${{ secrets.METABASE_URL }}" \
+            --build-secret METABASE_USERNAME="${{ secrets.METABASE_USERNAME }}" \
+            --build-secret METABASE_PASSWORD="${{ secrets.METABASE_PASSWORD }}" \
+            --build-secret SUPABASE_URL="${{ secrets.SUPABASE_URL }}" \
+            --build-secret SUPABASE_KEY="${{ secrets.SUPABASE_KEY }}"
+
+      - name: Deploy Frontend Service
+        # This command runs from within the 'frontend' directory
+        working-directory: ./frontend
+        run: |
+          flyctl deploy --config fly.toml
