@@ -3,7 +3,7 @@ name: Deploy to Fly.io
 # This workflow runs automatically every time you push to the 'main' branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   deploy:
