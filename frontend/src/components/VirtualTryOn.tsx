@@ -1,75 +1,77 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { EnrichedProduct } from '../types';
-import Spinner from './Spinner';
-import { ArrowLeftIcon, UploadIcon, CameraIcon, XIcon, HistoryIcon, TrashIcon, DownloadIcon } from './icons';
+import Spinner from './sPINNER';
+import { ArrowLeftIcon, UploadIcon, CameraIcon, XIcon, HistoryIcon, TrashIcon, DownloadIcon } from './icon';
 
 // --- Base helpers --- //
 const dot = (a: number[], b: number[]): number => {
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
-  return sum;
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+    return sum;
 };
 
 const magnitude = (a: number[]): number => {
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) sum += a[i] * a[i];
-  return Math.sqrt(sum);
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += a[i] * a[i];
+    return Math.sqrt(sum);
 };
 
 // Cosine similarity
 const cosineSimilarity = (a: number[], b: number[]): number => {
-  if (a.length !== b.length) return 0;
-  const magA = magnitude(a);
-  const magB = magnitude(b);
-  if (magA === 0 || magB === 0) return 0;
-  const cos = dot(a, b) / (magA * magB);
-  return Math.max(-1, Math.min(1, cos)); // clamp [-1,1]
+    if (a.length !== b.length) return 0;
+    const magA = magnitude(a);
+    const magB = magnitude(b);
+    if (magA === 0 || magB === 0) return 0;
+    const cos = dot(a, b) / (magA * magB);
+    return Math.max(-1, Math.min(1, cos)); // clamp [-1,1]
 };
 
 // Euclidean similarity (inverse distance)
 const euclideanSimilarity = (a: number[], b: number[]): number => {
-  if (a.length !== b.length) return 0;
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) {
-    const diff = a[i] - b[i];
-    sum += diff * diff;
-  }
-  return 1 / (1 + Math.sqrt(sum)); // normalize to (0,1]
+    if (a.length !== b.length) return 0;
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) {
+        const diff = a[i] - b[i];
+        sum += diff * diff;
+    }
+    return 1 / (1 + Math.sqrt(sum)); // normalize to (0,1]
 };
 
 // Pearson correlation similarity
 const pearsonSimilarity = (a: number[], b: number[]): number => {
-  if (a.length !== b.length) return 0;
-  const n = a.length;
-  const meanA = a.reduce((s, v) => s + v, 0) / n;
-  const meanB = b.reduce((s, v) => s + v, 0) / n;
+    if (a.length !== b.length) return 0;
+    const n = a.length;
+    if (n === 0) return 0;
+    const meanA = a.reduce((s, v) => s + v, 0) / n;
+    const meanB = b.reduce((s, v) => s + v, 0) / n;
 
-  let num = 0, denA = 0, denB = 0;
-  for (let i = 0; i < n; i++) {
-    const da = a[i] - meanA;
-    const db = b[i] - meanB;
-    num += da * db;
-    denA += da * da;
-    denB += db * db;
-  }
-  if (denA === 0 || denB === 0) return 0;
-  return num / Math.sqrt(denA * denB);
+    let num = 0, denA = 0, denB = 0;
+    for (let i = 0; i < n; i++) {
+        const da = a[i] - meanA;
+        const db = b[i] - meanB;
+        num += da * db;
+        denA += da * da;
+        denB += db * db;
+    }
+    if (denA === 0 || denB === 0) return 0;
+    return num / Math.sqrt(denA * denB);
 };
 
 // --- Final Hybrid Similarity --- //
 export const ultraSimilarity = (a: number[], b: number[]): number => {
-  const cos = cosineSimilarity(a, b);
-  const eucl = euclideanSimilarity(a, b);
-  const pearson = pearsonSimilarity(a, b);
+    const cos = cosineSimilarity(a, b);
+    const eucl = euclideanSimilarity(a, b);
+    const pearson = pearsonSimilarity(a, b);
 
-  // Weighted combo — tuned for embeddings
-  return (0.5 * cos) + (0.3 * eucl) + (0.2 * pearson);
+    // Weighted combo — tuned for embeddings
+    return (0.5 * cos) + (0.3 * eucl) + (0.2 * pearson);
 };
 
 // Helper function to convert model image URL to a File
 const urlToFile = async (url: string, filename: string, mimeType: string): Promise<File | null> => {
     try {
         const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
         const blob = await response.blob();
         return new File([blob], filename, { type: mimeType });
     } catch (e) {
@@ -78,11 +80,10 @@ const urlToFile = async (url: string, filename: string, mimeType: string): Promi
     }
 };
 
-
 interface VirtualTryOnProps {
-  product: EnrichedProduct;
-  allProducts: EnrichedProduct[];
-  onBack: () => void;
+    product: EnrichedProduct;
+    allProducts: EnrichedProduct[];
+    onBack: () => void;
 }
 
 const loadingMessages = [
@@ -96,15 +97,15 @@ const loadingMessages = [
 
 interface FileData {
     mimeType: string;
-    data: string; // This will be the base64 string without the prefix
+    data: string;
 }
 
 const HISTORY_KEY = 'fashion-gallery-history';
 const MAX_HISTORY_ITEMS = 6;
 
 interface HistoryImage {
-  id: string;
-  dataUrl: string;
+    id: string;
+    dataUrl: string;
 }
 
 const dataURLtoFile = (dataUrl: string, filename: string): File | null => {
@@ -112,7 +113,6 @@ const dataURLtoFile = (dataUrl: string, filename: string): File | null => {
         const arr = dataUrl.split(',');
         const mimeMatch = arr[0]?.match(/:(.*?);/);
         if (!arr[1] || !mimeMatch || !mimeMatch[1]) return null;
-        
         const mime = mimeMatch[1];
         const bstr = atob(arr[1]);
         let n = bstr.length;
@@ -147,6 +147,14 @@ const fileToData = (file: File): Promise<FileData> => {
     });
 };
 
+const allDummyModels = [
+    { id: 'woman_full', path: '/images/models/woman.png', alt: 'Female model', product_gender: 'Women', category: ['Clothes'] },
+    { id: 'man_full', path: '/images/models/man.png', alt: 'Male model', product_gender: 'Men', category: ['Clothes'] },
+    { id: 'woman_shoes', path: '/images/models/woman_shoes.png', alt: 'Female model for shoes', product_gender: 'Women', category: ['Shoes'] },
+    { id: 'man_shoes', path: '/images/models/man_shoes.png', alt: 'Male model for shoes', product_gender: 'Men', category: ['Shoes'] },
+    { id: 'woman_bags', path: '/images/models/woman_bags.png', alt: 'Female model for bags', product_gender: 'Women', category: ['Bags'] },
+    { id: 'man_bags', path: '/images/models/man_bags.png', alt: 'Male model for bags', product_gender: 'Men', category: ['Bags'] }
+];
 
 const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBack }) => {
     const [mainProduct, setMainProduct] = useState<EnrichedProduct>(product);
@@ -165,20 +173,16 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
 
     const { similarProducts, similarsError } = useMemo(() => {
         try {
-            const mainProductWithEmbedding = allProducts.find(p => p.product_id === product.product_id);
+            const mainProductWithEmbedding = allProducts.find(p => p.product_id === mainProduct.product_id);
             if (!mainProductWithEmbedding?.product_embedding) {
                 throw new Error("Could not find embedding for the selected product.");
             }
             const queryEmbedding = mainProductWithEmbedding.product_embedding;
-
-            // --- CRUCIAL FIX: Get the gender of the main product ---
             const mainProductGender = mainProductWithEmbedding.PRODUCT_GENDER;
 
-            const mainProductGroupCode = mainProductWithEmbedding.GROUP_CODE;
             let similarities = allProducts
-                // --- CRUCIAL FIX: Add gender check to the filter ---
                 .filter(p => 
-                    p.product_id !== product.product_id && 
+                    p.product_id !== mainProduct.product_id && 
                     p.product_embedding &&
                     p.PRODUCT_GENDER === mainProductGender
                 )
@@ -189,8 +193,8 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
                 
             similarities.sort((a, b) => b.similarity - a.similarity);
 
-            if (mainProductGroupCode) {
-                similarities = similarities.filter(item => item.product.GROUP_CODE !== mainProductGroupCode);
+            if (mainProductWithEmbedding.GROUP_CODE) {
+                similarities = similarities.filter(item => item.product.GROUP_CODE !== mainProductWithEmbedding.GROUP_CODE);
             }
             
             const topProducts = similarities.slice(0, 15).map(item => item.product);
@@ -199,26 +203,31 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
             console.error("Failed to calculate similar products:", err);
             return { similarProducts: [], similarsError: err.message || "Could not load similar items." };
         }
-    }, [product, allProducts]);
-
-    const allDummyModels = [
-        { id: 'woman_full', path: '/images/models/woman.png', alt: 'Female model', product_gender: 'Women', category: ['Clothes', 'Bags'] },
-        { id: 'man_full', path: '/images/models/man.png', alt: 'Male model', product_gender: 'Men', category: ['Clothes', 'Bags'] },
-        { id: 'woman_shoes', path: '/images/models/woman_shoes.png', alt: 'Female model for shoes', product_gender: 'Women', category: ['Shoes'] },
-        { id: 'man_shoes', path: '/images/models/man_shoes.png', alt: 'Male model for shoes', product_gender: 'Men', category: ['Shoes'] },
-    ];
+    }, [mainProduct, allProducts]);
 
     const filteredModels = useMemo(() => {
         const productCategory = mainProduct.CATEGORY;
-        const productGender = mainProduct.PRODUCT_GENDER; 
+        const productGender = mainProduct.PRODUCT_GENDER;
         if (!productCategory || !productGender) return [];
-
-        const categoryFiltered = allDummyModels.filter(model => model.category.includes(productCategory));
+      
+        const categoryMatch = allDummyModels.filter(model => 
+          model.category.includes(productCategory)
+        );
+      
         if (productGender === 'Unisex') {
-            return categoryFiltered;
+          return categoryMatch.length > 0 ? categoryMatch : allDummyModels.filter(m => m.category.includes('Clothes'));
         }
-        return categoryFiltered.filter(model => model.product_gender === productGender);
-    }, [mainProduct]);
+        
+        const specificMatch = categoryMatch.filter(model => model.product_gender === productGender);
+      
+        if (specificMatch.length > 0) {
+          return specificMatch;
+        } 
+        
+        return allDummyModels.filter(model => 
+          model.product_gender === productGender && model.category.includes('Clothes')
+        );
+      }, [mainProduct]);
 
     const handleDummyPhotoSelect = async (photoPath: string) => {
         setError(null);
@@ -248,7 +257,6 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
             }
         } catch (err) {
             console.error("Failed to load image history from localStorage:", err);
-            localStorage.removeItem(HISTORY_KEY);
         }
     }, []);
 
@@ -264,8 +272,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
     const saveImageToHistory = useCallback((dataUrl: string) => {
         const newHistoryItem: HistoryImage = { id: `${Date.now()}`, dataUrl };
         setImageHistory(prevHistory => {
-            const filteredHistory = prevHistory.filter(item => item.dataUrl !== dataUrl);
-            const newHistory = [newHistoryItem, ...filteredHistory].slice(0, MAX_HISTORY_ITEMS);
+            const newHistory = [newHistoryItem, ...prevHistory.filter(item => item.dataUrl !== dataUrl)].slice(0, MAX_HISTORY_ITEMS);
             try {
                 localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
             } catch (err) {
@@ -300,18 +307,14 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
         setGeneratedImage(null);
         setError(null);
         let messageInterval: NodeJS.Timeout | undefined;
-
         try {
             let messageIndex = 0;
             messageInterval = setInterval(() => {
                 messageIndex = (messageIndex + 1) % loadingMessages.length;
                 setLoadingMessage(loadingMessages[messageIndex]);
             }, 3000);
-
             const { mimeType, data: base64Image } = await fileToData(userImageFile);
-
             setLoadingMessage("Generating your virtual look...");
-            
             const response = await fetch('/api/generate-try-on', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -321,15 +324,11 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
                     product: mainProduct,
                 }),
             });
-            
             const result = await response.json();
-            
             if (!response.ok) {
                 throw new Error(result.detail || 'An unknown error occurred on the server.');
             }
-
             setGeneratedImage(`data:image/png;base64,${result.generated_image_b64}`);
-
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred during the try-on process.');
             setGeneratedImage(null);
@@ -360,7 +359,9 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
     };
 
     const handleCloseCamera = () => {
-        streamRef.current?.getTracks().forEach(track => track.stop());
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+        }
         setIsCameraOpen(false);
     };
 
@@ -445,7 +446,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
                         {similarsError && <p className="text-center text-red-400 bg-red-900/50 p-3 rounded-lg text-sm">{similarsError}</p>}
                         {!similarsError && (
                             <div ref={scrollContainerRef} className="flex items-center overflow-x-auto space-x-4 py-2 px-2 -mx-2 snap-x snap-mandatory scrollbar-thin">
-                                {[product, ...similarProducts].map((p, index) => (
+                                {[mainProduct, ...similarProducts].map((p, index) => (
                                     <div
                                         key={p.product_id}
                                         data-product-id={p.product_id}
@@ -502,11 +503,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
                         <div className="flex-grow border-t border-[var(--color-panel-border)]"></div>
                     </div>
 
-                    <button
-                        onClick={handleOpenCamera}
-                        className="w-full max-w-sm flex items-center justify-center gap-2 px-4 py-2 bg-transparent border border-[var(--color-panel-border)] rounded-md hover:bg-[var(--color-panel-border)] hover:text-[var(--color-accent-hover)] font-semibold"
-                        aria-label="Open camera to take a photo"
-                    >
+                    <button onClick={handleOpenCamera} className="w-full max-w-sm flex items-center justify-center gap-2 px-4 py-2 bg-transparent border border-[var(--color-panel-border)] rounded-md hover:bg-[var(--color-panel-border)] hover:text-[var(--color-accent-hover)] font-semibold" aria-label="Open camera to take a photo">
                         <CameraIcon className="h-5 w-5" />
                         Use Camera
                     </button>
@@ -542,40 +539,23 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ product, allProducts, onBac
                     <h2 className="text-2xl font-light mb-4 tracking-wider">3. Your Virtual Look</h2>
                     
                     <div className="w-full flex-grow flex items-center justify-center bg-black/20 rounded-lg min-h-[400px] relative group">
-                        {isLoading && (
-                            <div className="text-center p-4">
-                                <Spinner />
-                                <p className="mt-4 text-[var(--color-accent)]">{loadingMessage}</p>
-                            </div>
-                        )}
+                        {isLoading && ( <div className="text-center p-4"><Spinner /><p className="mt-4 text-[var(--color-accent)]">{loadingMessage}</p></div> )}
                         {!isLoading && error && <p className="text-red-400 bg-red-900/50 p-4 rounded-lg max-w-md text-center border border-red-800">{error}</p>}
                         
                         {!isLoading && !error && generatedImage && (
                             <>
                                 <img src={generatedImage} alt="Generated virtual try-on" className="max-w-full max-h-[500px] h-auto rounded-lg object-contain animate-fade-in" />
-                                <button
-                                    onClick={handleDownload}
-                                    className="absolute bottom-4 right-4 p-2 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-[var(--color-accent)] hover:text-black transition-all duration-300"
-                                    aria-label="Download generated image"
-                                >
+                                <button onClick={handleDownload} className="absolute bottom-4 right-4 p-2 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-[var(--color-accent)] hover:text-black transition-all duration-300" aria-label="Download generated image">
                                     <DownloadIcon className="h-6 w-6" />
                                 </button>
                             </>
                         )}
                         
-                        {!isLoading && !error && !generatedImage && (
-                            <div className="text-center text-[var(--color-text-secondary)] p-4">
-                                <p>Your AI-generated image will appear here.</p>
-                            </div>
-                        )}
+                        {!isLoading && !error && !generatedImage && ( <div className="text-center text-[var(--color-text-secondary)] p-4"><p>Your AI-generated image will appear here.</p></div> )}
                     </div>
                     
                     {userImagePreview && (
-                        <button
-                            onClick={handleTryOn}
-                            disabled={isLoading}
-                            className="mt-6 w-full max-w-sm px-6 py-3 bg-[var(--color-accent)] text-black font-bold rounded-lg hover:bg-[var(--color-accent-hover)] disabled:bg-gray-600 disabled:cursor-not-allowed transform hover:scale-105"
-                        >
+                        <button onClick={handleTryOn} disabled={isLoading} className="mt-6 w-full max-w-sm px-6 py-3 bg-[var(--color-accent)] text-black font-bold rounded-lg hover:bg-[var(--color-accent-hover)] disabled:bg-gray-600 disabled:cursor-not-allowed transform hover:scale-105">
                             {isLoading ? 'Generating...' : generatedImage ? 'Generate Again' : 'Generate Look'}
                         </button>
                     )}

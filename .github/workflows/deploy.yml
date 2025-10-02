@@ -52,7 +52,6 @@ jobs:
           # Create the project directory on the server if it doesn't exist
           mkdir -p ~/fashion-gallery-ai/backend
           cd ~/fashion-gallery-ai
-
           # Create or overwrite the .env file for the backend using the secrets
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > ./backend/.env
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> ./backend/.env
@@ -60,7 +59,6 @@ jobs:
           echo "METABASE_USERNAME=${{ secrets.METABASE_USERNAME }}" >> ./backend/.env
           echo "METABASE_PASSWORD=${{ secrets.METABASE_PASSWORD }}" >> ./backend/.env
           echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> ./backend/.env
-
           # Create or overwrite the docker-compose.yml file on the server
           # Note: We must escape the dollar signs for the shell
           echo '${{ secrets.DOCKER_COMPOSE_PROD }}' > docker-compose.yml

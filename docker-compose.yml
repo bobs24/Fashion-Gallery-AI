@@ -1,24 +1,16 @@
-version: '3.8'
-
 services:
   backend:
-    # Use the pre-built image from Docker Hub
     image: bobs24/fashion-gallery-backend:latest
-    platform: linux/arm64
     restart: always
     env_file:
       - ./backend/.env
     ports:
       - "8000:8000"
-    # 'build', 'volumes', and 'command' are removed for production
 
   frontend:
-    # Use the pre-built image from Docker Hub
     image: bobs24/fashion-gallery-frontend:latest
-    platform: linux/arm64
     restart: always
     ports:
-      # Map port 80 (HTTP) on the server to port 80 in the container
       - "80:80" 
     depends_on:
       - backend

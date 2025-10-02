@@ -1,10 +1,5 @@
 # Virtual Stylist AI
 
-**Live Application URL:** [https://your-frontend-app-name.fly.dev](https://your-frontend-app-name.fly.dev)  
-*Note: Replace `your-username/your-repo-name` and `your-frontend-app-name` with your actual GitHub and Fly.io details.*
-
----
-
 ## Overview
 
 This repository contains the source code for **Virtual Stylist AI**, a full-stack web application that allows users to:

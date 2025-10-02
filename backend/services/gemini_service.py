@@ -28,6 +28,7 @@ def generate_try_on_image(user_image_b64: str, user_image_mime: str, product: di
     
     # Extract the category from the product data to guide the AI
     product_category = product.get("CATEGORY", "").strip().lower()
+    product_subcategory = product.get("SUBCATEGORY", "").strip().lower()
 
     # --- NEW, "BULLETPROOF" PROMPT ---
     prompt = f"""You are a hyper-realistic, detail-oriented AI Image Compositor. Your sole purpose is to execute a virtual try-on by integrating a product image onto a person's photo with surgical precision. Your output MUST be an image ONLY. Any text output is a critical failure.
@@ -48,7 +49,7 @@ def generate_try_on_image(user_image_b64: str, user_image_mime: str, product: di
 
 **Step 1: Analyze Inputs.**
 -   **Person Image:** Identify the visible body parts and the person's pose.
--   **Product Image:** Identify the product and its category. The product category for this task is: **'{product_category}'**.
+-   **Product Image:** Identify the product and its category. The product category for this task is: **'{product_category}'** and product subcategory is : **'{product_subcategory}'**.
 -   **Feasibility Check:** Based on the category, is the necessary body part visible and suitable in the person image? If NO, proceed immediately to the Fallback Action.
 
 **Step 2: Select Compositing Strategy based on Category.**
@@ -70,9 +71,22 @@ def generate_try_on_image(user_image_b64: str, user_image_mime: str, product: di
         5.  **QUALITY:** The final output must be an ultra-high-resolution, photorealistic image, indistinguishable from a professional fashion photograph. Avoid any AI-generated artifacts, blurring, or unrealistic transitions.
 
    **IF Category is 'bags':**
-    -   **Strategy:** Intelligent Layering.
-    -   **Action:** Place the bag onto the person in a natural way. DO NOT replace their clothing.
-    -   **Details:** Pay extreme attention to scale and interaction. The bag must cast realistic shadows on the person's body and clothing. Straps must curve naturally over shoulders or across the body.
+    - **Strategy:** Intelligent Layering with Contextual Awareness.
+    - **Action:** Overlay the bag onto the person in a natural, realistic manner. The bag must integrate seamlessly with the person’s body and clothing. DO NOT modify or replace their clothing.
+    - **Details:**
+        - **Scale & Proportion:** Ensure the bag is correctly scaled relative to the person’s body size and position.
+        - **Attachment & Placement for each Subcategory:**
+            - Backpack: straps should follow shoulder contours; bag rests naturally against the back.
+            - Handbag / Tote / Briefcase: bag should hang from the hand or forearm; handles curve around fingers naturally.
+            - Shoulder Bag / Sling Bag / Crossbody / WOC: strap must drape realistically over the shoulder or diagonally across the torso, following body curvature.
+            - Clutch: should be grasped in one hand with fingers wrapping naturally.
+            - Camera Bag / Bowling Bag: should be carried in hand or rest against the hip/thigh, straps aligned to gravity.
+            - Luggage: should be positioned beside the person, handle aligned with the hand if pulled.
+    - **Physical Interaction:** The bag must touch and interact with the body (hips, torso, legs, arms) naturally — no floating.
+    - **Shadows & Lighting:** Add subtle shadows where the bag touches the body or clothing, consistent with the global light source. Reflections and highlights on leather/fabric should match the scene’s environment.
+    - **Strap Dynamics:** Straps should curve, fold, and stretch realistically depending on tension and body shape (e.g., pressing against clothing, bending around shoulders).
+    - **Clothing Integrity:** Never replace or distort the clothing. If overlapping occurs, ensure the bag visually layers on top while respecting folds and textures of fabric beneath.
+    - **Pose Sensitivity:** The bag’s orientation should adapt to the wearer’s pose (walking, standing, sitting, turning).
 
    **IF Category is 'shoes':**
     -   **Strategy:** Footwear Replacement.
