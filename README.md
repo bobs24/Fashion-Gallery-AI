@@ -65,7 +65,7 @@ Two Docker containers run on **AWS EC2**:
 | **Frontend** | React, TypeScript, Vite, Tailwind CSS |
 | **Backend** | Python, FastAPI |
 | **Database** | Supabase (PostgreSQL + pgvector), Metabase |
-| **AI / ML** | Google Gemini 2.5 Flash, DinoV2 |
+| **AI / ML** | Google Gemini 2.5 Flash, ViT |
 | **DevOps** | Docker, Docker Compose, Nginx, GitHub Actions, AWS EC2, Docker Hub |
 
 ---
